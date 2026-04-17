@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Propiteq — Agente UX Writer</title>
+<style>
+  :root {
+    --navy: #152040;
+    --blue: #5580FF;
+    --light-blue: #8FA8FF;
+    --mint: #75E9BF;
+    --mint-dark: #1ABF87;
+    --yellow: #EDE8B2;
+    --purple: #8F97F2;
+    --white: #ffffff;
+    --surface: #F4F6FF;
+    --surface2: #EAEEF8;
+    --border: rgba(21,32,64,0.12);
+    --border-strong: rgba(21,32,64,0.25);
+    --text-muted: #5A6A8A;
+    --text-body: #2A3A5A;
+    --font: 'Segoe UI', system-ui, sans-serif;
+    --radius: 10px;
+    --radius-lg: 16px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--surface);
+    color: var(--text-body);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .header {
+    background: var(--navy);
+    padding: 16px 28px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .logo-mark {
+    width: 36px; height: 36px;
+    background: var(--blue);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .logo-text { color: white; font-size: 15px; font-weight: 600; letter-spacing: -0.02em; }
+  .logo-sub { color: rgba(255,255,255,0.45); font-size: 12px; margin-top: 1px; }
+  .header-badge {
+    margin-left: auto;
+    background: rgba(85,128,255,0.18);
+    color: var(--light-blue);
+    font-size: 11px; font-weight: 600;
+    padding: 4px 10px; border-radius: 20px;
+    border: 1px solid rgba(85,128,255,0.3);
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+
+  .main { display: flex; flex: 1; min-height: 0; }
+
+  .sidebar {
+    width: 280px; min-width: 280px;
+    background: var(--white);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    padding: 20px 16px; gap: 20px;
+    overflow-y: auto;
+  }
+
+  .sidebar-section-title {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: 8px; padding-left: 4px;
+  }
+
+  .selector-group { display: flex; flex-direction: column; gap: 6px; }
+
+  select {
+    width: 100%; padding: 9px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    font-size: 13px; font-family: var(--font);
+    background: var(--surface); color: var(--text-body);
+    cursor: pointer; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235A6A8A' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center;
+    padding-right: 32px; transition: border-color 0.15s;
+  }
+  select:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(85,128,255,0.12); }
+
+  .persona-grid { display: flex; flex-direction: column; gap: 6px; }
+  .persona-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: var(--radius);
+    border: 1.5px solid transparent; cursor: pointer;
+    transition: all 0.15s; background: var(--surface);
+  }
+  .persona-card:hover { background: var(--surface2); }
+  .persona-card.active { border-color: var(--blue); background: #EEF2FF; }
+  .persona-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; flex-shrink: 0;
+  }
+  .persona-name { font-size: 13px; font-weight: 600; color: var(--text-body); }
+  .persona-desc { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+  .journey-grid { display: flex; flex-direction: column; gap: 5px; }
+  .journey-pill {
+    display: flex; align-items: center; gap: 9px;
+    padding: 8px 11px; border-radius: var(--radius);
+    border: 1.5px solid transparent; cursor: pointer;
+    transition: all 0.15s; background: var(--surface);
+  }
+  .journey-pill:hover { background: var(--surface2); }
+  .journey-pill.active { border-color: var(--mint-dark); background: #E6FBF4; }
+  .journey-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .journey-name { font-size: 13px; font-weight: 600; color: var(--text-body); }
+  .journey-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+  .format-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    padding: 5px 11px; border-radius: 20px;
+    border: 1px solid var(--border-strong);
+    font-size: 12px; font-weight: 500; cursor: pointer;
+    background: var(--surface); color: var(--text-body);
+    transition: all 0.15s;
+  }
+  .chip:hover { background: var(--surface2); }
+  .chip.active { background: var(--navy); color: white; border-color: var(--navy); }
+
+  .right-panel {
+    flex: 1; display: flex; flex-direction: column;
+    min-width: 0; padding: 24px 28px; gap: 20px; overflow-y: auto;
+  }
+
+  .context-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px; background: var(--white);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    flex-wrap: wrap;
+  }
+  .ctx-tag {
+    display: flex; align-items: center; gap: 5px;
+    background: var(--surface2); border-radius: 6px;
+    padding: 3px 8px; font-size: 12px; color: var(--text-body); font-weight: 500;
+  }
+  .ctx-tag span { color: var(--text-muted); font-weight: 400; }
+  .ctx-divider { color: var(--border-strong); font-size: 16px; }
+
+  .prompt-area {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 16px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .prompt-area textarea {
+    width: 100%; border: 1px solid var(--border-strong);
+    border-radius: var(--radius); padding: 12px 14px;
+    font-size: 14px; font-family: var(--font); color: var(--text-body);
+    background: var(--surface); resize: vertical; min-height: 80px;
+    transition: border-color 0.15s; line-height: 1.5;
+  }
+  .prompt-area textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(85,128,255,0.1); }
+  .prompt-area textarea::placeholder { color: var(--text-muted); }
+
+  .prompt-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+  .btn-generate {
+    background: var(--blue); color: white; border: none;
+    padding: 10px 22px; border-radius: var(--radius);
+    font-size: 14px; font-weight: 600; font-family: var(--font);
+    cursor: pointer; display: flex; align-items: center; gap: 7px;
+    transition: all 0.15s; letter-spacing: -0.01em;
+  }
+  .btn-generate:hover { background: #4470EE; transform: translateY(-1px); }
+  .btn-generate:active { transform: translateY(0); }
+  .btn-generate:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+  .btn-secondary {
+    background: transparent; color: var(--text-body);
+    border: 1px solid var(--border-strong); padding: 9px 16px;
+    border-radius: var(--radius); font-size: 13px; font-weight: 500;
+    font-family: var(--font); cursor: pointer; transition: all 0.15s;
+  }
+  .btn-secondary:hover { background: var(--surface2); }
+
+  .quick-prompts { display: flex; flex-wrap: wrap; gap: 6px; }
+  .quick-btn {
+    padding: 5px 11px; border-radius: 20px;
+    border: 1px solid var(--border-strong); font-size: 12px;
+    background: var(--surface); color: var(--text-muted);
+    cursor: pointer; transition: all 0.15s; font-family: var(--font);
+  }
+  .quick-btn:hover { background: var(--surface2); color: var(--text-body); }
+
+  .output-area {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); min-height: 240px; overflow: hidden;
+  }
+  .output-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .output-title {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--text-muted);
+  }
+  .output-actions { display: flex; gap: 6px; }
+  .icon-btn {
+    padding: 5px 10px; border-radius: 7px;
+    border: 1px solid var(--border-strong); background: var(--white);
+    font-size: 12px; color: var(--text-muted); cursor: pointer;
+    font-family: var(--font); transition: all 0.15s;
+  }
+  .icon-btn:hover { background: var(--surface2); color: var(--text-body); }
+
+  .output-body {
+    padding: 20px; font-size: 14px; line-height: 1.7;
+    color: var(--text-body); min-height: 200px;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  .output-empty {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    min-height: 200px; gap: 10px; color: var(--text-muted);
+  }
+  .empty-icon { font-size: 36px; opacity: 0.4; }
+  .empty-text { font-size: 13px; text-align: center; max-width: 220px; line-height: 1.5; }
+
+  .loading-dots { display: flex; gap: 5px; align-items: center; padding: 20px; }
+  .loading-dots span {
+    width: 7px; height: 7px; background: var(--blue);
+    border-radius: 50%; animation: bounce 1.2s infinite;
+  }
+  .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.5; }
+    40% { transform: translateY(-6px); opacity: 1; }
+  }
+
+  .history-section { display: flex; flex-direction: column; gap: 10px; }
+  .history-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.07em;
+    text-transform: uppercase; color: var(--text-muted); padding: 0 4px;
+  }
+  .history-item {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 12px 14px; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .history-item:hover { border-color: var(--blue); background: #EEF2FF; }
+  .history-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .history-snippet { font-size: 13px; color: var(--text-body); line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .copy-toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: var(--navy); color: white;
+    padding: 10px 18px; border-radius: var(--radius);
+    font-size: 13px; font-weight: 500;
+    opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 99;
+  }
+  .copy-toast.show { opacity: 1; }
+  .sidebar-divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+  @media (max-width: 768px) {
+    .main { flex-direction: column; }
+    .sidebar { width: 100%; min-width: unset; }
+    .right-panel { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo-mark">📍</div>
+  <div>
+    <div class="logo-text">propiteq</div>
+    <div class="logo-sub">Agente UX Writer</div>
+  </div>
+  <div class="header-badge">Beta</div>
+</header>
+
+<div class="main">
+  <aside class="sidebar">
+
+    <div>
+      <div class="sidebar-section-title">Tipo de usuario</div>
+      <div class="persona-grid" id="personaGrid">
+        <div class="persona-card active" data-persona="corredor" onclick="selectPersona(this)">
+          <div class="persona-icon" style="background:#EEF2FF;">🏢</div>
+          <div><div class="persona-name">Corredor</div><div class="persona-desc">Profesional intermediario</div></div>
+        </div>
+        <div class="persona-card" data-persona="banco" onclick="selectPersona(this)">
+          <div class="persona-icon" style="background:#F0F0FF;">🏦</div>
+          <div><div class="persona-name">Banco / Fintech</div><div class="persona-desc">Servicios financieros</div></div>
+        </div>
+        <div class="persona-card" data-persona="desarrollador" onclick="selectPersona(this)">
+          <div class="persona-icon" style="background:#F0FFF8;">🏗️</div>
+          <div><div class="persona-name">Desarrollador</div><div class="persona-desc">Inmobiliaria / constructora</div></div>
+        </div>
+        <div class="persona-card" data-persona="b2c_primera_vez" onclick="selectPersona(this)">
+          <div class="persona-icon" style="background:#E6FBF4;">🏠</div>
+          <div><div class="persona-name">Primera vez</div><div class="persona-desc">Comprador / arrendatario primerizo</div></div>
+        </div>
+        <div class="persona-card" data-persona="b2c_con_experiencia" onclick="selectPersona(this)">
+          <div class="persona-icon" style="background:#FFFBEB;">📈</div>
+          <div><div class="persona-name">Con experiencia</div><div class="persona-desc">Inversionista / vendedor</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div>
+      <div class="sidebar-section-title">Etapa del viaje</div>
+      <div class="journey-grid" id="journeyGrid">
+        <div class="journey-pill" data-journey="descubrimiento" onclick="selectJourney(this)">
+          <div class="journey-dot" style="background:#5580FF;"></div>
+          <div><div class="journey-name">Descubrimiento</div><div class="journey-sub">Awareness, primer contacto</div></div>
+        </div>
+        <div class="journey-pill active" data-journey="onboarding" onclick="selectJourney(this)">
+          <div class="journey-dot" style="background:#75E9BF;"></div>
+          <div><div class="journey-name">Onboarding</div><div class="journey-sub">Registro, primeros pasos</div></div>
+        </div>
+        <div class="journey-pill" data-journey="activacion" onclick="selectJourney(this)">
+          <div class="journey-dot" style="background:#8F97F2;"></div>
+          <div><div class="journey-name">Activación</div><div class="journey-sub">Primer uso del producto</div></div>
+        </div>
+        <div class="journey-pill" data-journey="compra" onclick="selectJourney(this)">
+          <div class="journey-dot" style="background:#EDE8B2;"></div>
+          <div><div class="journey-name">Conversión / Compra</div><div class="journey-sub">Checkout, upgrade</div></div>
+        </div>
+        <div class="journey-pill" data-journey="uso_recurrente" onclick="selectJourney(this)">
+          <div class="journey-dot" style="background:#1ABF87;"></div>
+          <div><div class="journey-name">Uso recurrente</div><div class="journey-sub">Retention, hábito</div></div>
+        </div>
+        <div class="journey-pill" data-journey="reactivacion" onclick="selectJourney(this)">
+          <div class="journey-dot" style="background:#F4A261;"></div>
+          <div><div class="journey-name">Reactivación</div><div class="journey-sub">Churn recovery, win-back</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div>
+      <div class="sidebar-section-title">Formato</div>
+      <div class="format-chips" id="formatChips">
+        <div class="chip active" data-format="ui_copy" onclick="toggleFormat(this)">UI Copy</div>
+        <div class="chip" data-format="email" onclick="toggleFormat(this)">Email</div>
+        <div class="chip" data-format="notificacion" onclick="toggleFormat(this)">Notificación</div>
+        <div class="chip" data-format="onboarding_flow" onclick="toggleFormat(this)">Onboarding</div>
+        <div class="chip" data-format="tooltip" onclick="toggleFormat(this)">Tooltip</div>
+        <div class="chip" data-format="cta" onclick="toggleFormat(this)">CTA / Botones</div>
+        <div class="chip" data-format="empty_state" onclick="toggleFormat(this)">Empty State</div>
+        <div class="chip" data-format="error" onclick="toggleFormat(this)">Error / Success</div>
+        <div class="chip" data-format="landing" onclick="toggleFormat(this)">Landing copy</div>
+      </div>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div>
+      <div class="sidebar-section-title">Producto (opcional)</div>
+      <div class="selector-group">
+        <select id="productSelect">
+          <option value="">— Todos los productos —</option>
+          <option value="Tasación Online">Tasación Online</option>
+          <option value="Consulta Propiedad">Consulta Propiedad</option>
+          <option value="Contactabilidad">Contactabilidad</option>
+          <option value="Perfil Comercial">Perfil Comercial</option>
+          <option value="Análisis de Mercado">Análisis de Mercado</option>
+          <option value="Visor Inmobiliario">Visor Inmobiliario</option>
+          <option value="Big Data">Big Data</option>
+          <option value="Mapa Inmobiliario">Mapa Inmobiliario</option>
+        </select>
+      </div>
+    </div>
+
+  </aside>
+
+  <main class="right-panel">
+
+    <div class="context-bar" id="contextBar">
+      <div class="ctx-tag">👤 <span>Usuario:</span> Corredor</div>
+      <div class="ctx-divider">·</div>
+      <div class="ctx-tag">🗺️ <span>Etapa:</span> Onboarding</div>
+      <div class="ctx-divider">·</div>
+      <div class="ctx-tag">📋 <span>Formato:</span> UI Copy</div>
+    </div>
+
+    <div class="prompt-area">
+      <textarea id="promptInput" placeholder="Describe qué necesitas escribir... Ej: 'Texto para el botón que activa la primera tasación' o 'Modal de bienvenida cuando el corredor completa su perfil'" rows="3"></textarea>
+      <div class="quick-prompts">
+        <button class="quick-btn" onclick="useQuick(this)">Mensaje de bienvenida</button>
+        <button class="quick-btn" onclick="useQuick(this)">Texto de botón CTA</button>
+        <button class="quick-btn" onclick="useQuick(this)">Email de activación</button>
+        <button class="quick-btn" onclick="useQuick(this)">Empty state vacío</button>
+        <button class="quick-btn" onclick="useQuick(this)">Tooltip de feature</button>
+        <button class="quick-btn" onclick="useQuick(this)">Mensaje de error</button>
+        <button class="quick-btn" onclick="useQuick(this)">Notificación push</button>
+        <button class="quick-btn" onclick="useQuick(this)">Upgrade / paywall</button>
+      </div>
+      <div class="prompt-actions">
+        <button class="btn-generate" id="generateBtn" onclick="generate()">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor"/></svg>
+          Generar copy
+        </button>
+        <button class="btn-secondary" onclick="clearAll()">Limpiar</button>
+        <button class="btn-secondary" onclick="generateVariants()">3 variantes</button>
+      </div>
+    </div>
+
+    <div class="output-area">
+      <div class="output-header">
+        <span class="output-title">Resultado</span>
+        <div class="output-actions">
+          <button class="icon-btn" onclick="copyOutput()">📋 Copiar</button>
+          <button class="icon-btn" onclick="saveToHistory()">💾 Guardar</button>
+        </div>
+      </div>
+      <div class="output-body" id="outputBody">
+        <div class="output-empty">
+          <div class="empty-icon">✍️</div>
+          <div class="empty-text">Selecciona usuario, etapa y formato, luego describe qué necesitas.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="history-section" id="historySection" style="display:none">
+      <div class="history-title">Generaciones recientes</div>
+      <div id="historyList"></div>
+    </div>
+
+  </main>
+</div>
+
+<div class="copy-toast" id="copyToast">✓ Copiado al portapapeles</div>
+
+<script>
+// ─────────────────────────────────────────────────
+// CONTEXT — importado inline desde context.js
+// En producción este bloque viene del archivo separado
+// ─────────────────────────────────────────────────
+
+const ROLE = `
+Eres el UX Writer senior de Propiteq, plataforma chilena de inteligencia inmobiliaria respaldada por Transsa (+35 años tasando bienes raíces).
+
+Tu trabajo es generar copy para producto, marketing y comunicaciones. Todo lo que escribes es un primer borrador de alta calidad que luego revisa un humano — por eso puedes ser creativo y proponer, sabiendo que hay un filtro posterior.
+
+Tu output debe ser siempre:
+- Listo para usar (no descripciones de lo que harías, sino el copy directamente)
+- Etiquetado con claridad cuando hay múltiples piezas (Título:, Subtítulo:, CTA:, etc.)
+- Acompañado de una línea final "📝 Nota UX:" con una recomendación de uso o contexto relevante
+
+Propiteq NO es un portal de propiedades. Es una capa de datos e inteligencia sobre el mercado inmobiliario. Su propósito es impulsar la simetría informativa.
+`;
+
+const BRAND_VOICE = `
+## VOZ DE MARCA PROPITEQ
+
+Personalidad: El Sabio (conocimiento, análisis, referente) + El Idealista (optimista, honesto, cercano).
+5 características: perspicaz, positiva, experta, sencilla, confiable.
+
+Voz invariable:
+- Español chileno profesional. Ni coloquial extremo, ni académico rígido
+- "Nosotros" como marca. "Tú" con el usuario. NUNCA "usted" en digital
+- Frases cortas. Si cabe en 10 palabras, no uses 25
+- Concreto sobre abstracto: datos, ejemplos, cifras
+- Siempre orientado a la acción
+
+Prohibidos absolutos:
+- NO jerga técnica sin contexto (AVM, hedonic pricing, cap rate sin explicar)
+- NO lenguaje de miedo o presión negativa
+- NO decir "valor exacto" — siempre "estimación de valor comercial"
+- NO hablar de la competencia
+- NO ser corporativo ni distante
+- NO "usted" en digital
+
+Nombres oficiales de productos:
+- Tasación Online: "Informe profesional con estimación de valor comercial, comparables y métricas financieras"
+- Consulta Propiedad: "Ficha completa de cualquier propiedad con información oficial del SII"
+- Contactabilidad: "Datos de contacto para prospección comercial"
+- Perfil Comercial: "Evaluación financiera de potenciales arrendatarios o clientes"
+- Análisis de Mercado: "Estadísticas y comparativas de ventas reales y oferta activa por zona"
+- Visor Inmobiliario: "Plataforma interactiva para explorar ventas y publicaciones con filtros avanzados"
+- Big Data: "Herramienta analítica para construir paneles personalizados y cruzar bases de datos"
+- Mapa Inmobiliario: "Mapa dinámico con el valor estimado de todas las casas y departamentos de Chile"
+`;
+
+const PERSONAS = {
+  corredor: `## USUARIO: CORREDOR DE PROPIEDADES
+Perfil: Profesional que intermedia en compras, ventas y arriendos. Su tiempo es su activo. Vive de cerrar negocios y construir reputación.
+Pain: Información fragmentada, procesos manuales, necesidad de diferenciarse con datos que la competencia no tiene.
+Tono: Colega profesional. Par a par. Directo al beneficio concreto. Sin condescendencia.
+Vocabulario preferido: cerrar más operaciones, ventaja informativa, en minutos, antes que tu competencia, datos que respaldan tu precio.
+Evitar: "aprende sobre el mercado" (condescendiente), términos básicos sin contexto profesional.`,
+
+  banco: `## USUARIO: BANCO / FINTECH / SERVICIOS FINANCIEROS
+Perfil: Ejecutivo que necesita data inmobiliaria para originación, due diligence, análisis de riesgo, valuación de garantías.
+Pain: Necesitan data estructurada, trazable y confiable a escala. Procesos manuales son lentos y caros.
+Tono: Profesional-consultivo. Datos duros, credibilidad institucional. Más formal, pero nunca frío.
+Vocabulario preferido: data estructurada, análisis masivo, trazabilidad, respaldo metodológico, API, escala nacional.
+Evitar: lenguaje emocional, "tu hogar", términos informales.`,
+
+  desarrollador: `## USUARIO: DESARROLLADOR INMOBILIARIO / CONSTRUCTORA
+Perfil: Toma decisiones de inversión basadas en factibilidad. Evalúa terrenos, zonas, lanzamientos.
+Pain: Estudios de factibilidad caros y lentos. Necesita entender rápido si una zona tiene demanda y a qué precios reales.
+Tono: Estratégico. Orientado a oportunidades y retorno. Sin rodeos.
+Vocabulario preferido: operaciones reales, tendencia de precios, análisis de zona, factibilidad, velocidad de venta.
+Evitar: lenguaje emocional B2C, "tu hogar".`,
+
+  b2c_primera_vez: `## USUARIO: B2C — PRIMERA VEZ
+Perfil: 25–38 años. Comprador, arrendatario o vendedor primerizo. Mezcla ilusión, ansiedad y sensación de no saber las reglas del juego.
+Pain: Se siente en desventaja informativa. Miedo a tomar una mala decisión que lo afecte por años.
+Tono: El más empático y cálido. Valida la emoción antes de informar. Acompaña, no solo informa. Usa "hogar" siempre — nunca "propiedad" como término frío.
+Vocabulario preferido: tu hogar, el lugar que buscas, dar el paso con seguridad, sin sorpresas, entender antes de decidir.
+Nota: único perfil donde cabe emoción real en el copy.`,
+
+  b2c_con_experiencia: `## USUARIO: B2C — CON EXPERIENCIA
+Perfil: 35–55 años. Ya vivió al menos una transacción. Puede tener propiedades que arrienda o querer comprar como inversión.
+Pain: Quiere datos confiables para no dejar dinero sobre la mesa. Siente que la información del mercado es opaca.
+Tono: Empoderador y directo. Más orientado a datos. "Hogar" cuando es personal, "propiedad" cuando es inversión.
+Vocabulario preferido: decisión informada, saber cuánto vale realmente, el momento justo, sin intermediarios opacos, datos reales.
+Evitar: explicaciones básicas condescendientes, lenguaje emocional que no corresponda al contexto.`
+};
+
+const JOURNEYS = {
+  descubrimiento: `## ETAPA: DESCUBRIMIENTO
+El usuario aún no conoce Propiteq. Está evaluando si vale la pena.
+Objetivo: Generar curiosidad y confianza. Comunicar el valor de forma simple. Una promesa clara > lista de funcionalidades.
+Reglas: El copy debe entenderse sin conocer Propiteq. Enfocarse en el problema, no en cómo se resuelve. Evitar tecnicismos.`,
+
+  onboarding: `## ETAPA: ONBOARDING
+Acaba de registrarse. Motivado pero puede sentirse abrumado.
+Objetivo: Guiar con claridad, celebrar los primeros pasos, hacer el proceso fácil y valioso.
+Reglas: Celebrar micro-logros. Indicar siempre el siguiente paso. Textos cortos. Nunca hacer sentir que falta mucho.`,
+
+  activacion: `## ETAPA: ACTIVACIÓN
+Va a usar el producto por primera vez. Momento del "aha".
+Objetivo: Reducir fricción, guiar al resultado más rápido, hacer que el primer resultado se sienta valioso.
+Reglas: Orientar la acción, no describir la feature. Mostrar beneficio antes de pedir esfuerzo. Tooltips y microcopy son críticos aquí.`,
+
+  compra: `## ETAPA: CONVERSIÓN / COMPRA
+Está evaluando pagar o hacer upgrade. Tiene intención pero también dudas.
+Objetivo: Reforzar valor, reducir fricción, hacer el CTA irresistible sin presionar.
+Reglas: Enfocarse en lo que gana, no en lo que cuesta. Evitar urgencia artificial. CTA específico. Anticipar la duda más frecuente.`,
+
+  uso_recurrente: `## ETAPA: USO RECURRENTE
+Usuario activo. Ya conoce la plataforma.
+Objetivo: Premiar el hábito, descubrir features no usadas, reforzar que Propiteq es su ventaja permanente.
+Reglas: No explicar lo básico. Destacar lo nuevo o lo no descubierto. Tono más cercano y directo.`,
+
+  reactivacion: `## ETAPA: REACTIVACIÓN
+Dejó de usar la plataforma. Puede ser por falta de necesidad momentánea, no insatisfacción.
+Objetivo: Reconectar sin culpa, mostrar qué hay de nuevo, hacer el regreso fácil.
+Reglas: Nunca culpa por haberse ido. Mostrar algo concreto nuevo. Un solo CTA. Cálido pero no desesperado.`
+};
+
+const FORMATS = {
+  ui_copy: `## FORMATO: UI COPY
+Entrega etiquetado: Título de pantalla (máx. 6 palabras) / Subtítulo (1–2 oraciones) / Labels / Estados / CTA principal (verbo + objeto, máx. 4 palabras).
+Reglas: Sin puntuación final en títulos ni CTAs. Sentence case siempre. Errores = qué pasó + qué hacer. CTAs = qué pasa exactamente al hacer clic.`,
+
+  email: `## FORMATO: EMAIL
+Entrega: Asunto (máx. 50 caracteres) / Preview text (máx. 90 caracteres, complementa sin repetir) / Saludo / Cuerpo (3–5 párrafos cortos) / CTA / Firma.
+Reglas: Cada párrafo máx. 3 oraciones. Una sola idea por email. CTA visible antes de la mitad. Tono conversacional.`,
+
+  notificacion: `## FORMATO: NOTIFICACIÓN
+Entrega: Título (máx. 35 caracteres) / Cuerpo (máx. 90 caracteres) / CTA implícito.
+Reglas: Debe funcionar sin contexto previo. Urgente o relevante, nunca decorativa. No clickbait. Personalización cuando sea posible.`,
+
+  onboarding_flow: `## FORMATO: FLUJO DE ONBOARDING
+Entrega 3–5 pantallas. Por cada una: número y título de pantalla / Título principal / Subtítulo (por qué importa) / CTA / Texto de progreso.
+Reglas: Una acción por pantalla. Primer paso = el más fácil. Mostrar beneficio, no solo instrucción. Último paso celebra y muestra qué sigue.`,
+
+  tooltip: `## FORMATO: TOOLTIP / MICROCOPY
+Entrega: Texto del tooltip (1–2 oraciones) / Contexto de activación.
+Reglas: Responde "¿qué es esto?" o "¿para qué sirve?". Máx. 2 oraciones. Traduce lo técnico a beneficio concreto.`,
+
+  cta: `## FORMATO: CTAs / BOTONES
+Entrega: CTA principal / CTA secundario / CTA terciario si aplica / Contexto de uso.
+Reglas: Verbo infinitivo + objeto. Principal = más específico. Secundario = menor compromiso. Máx. 4 palabras. Los dos CTAs deben diferenciarse en nivel de compromiso.`,
+
+  empty_state: `## FORMATO: EMPTY STATE
+Entrega: Título (positivo, qué puede hacer) / Descripción (beneficio de completar, 1–2 oraciones) / CTA / Contexto.
+Reglas: Nunca negativo. Es oportunidad de activación. Tono puede ser levemente más juguetón. CTA lleva directo a resolver el vacío.`,
+
+  error: `## FORMATO: ERRORES Y ÉXITO
+Para errores: Título (qué pasó, sin tecnicismos) / Descripción (por qué + qué hacer) / CTA de recuperación.
+Para éxito: Título (confirma y celebra) / Descripción (qué sigue) / CTA siguiente.
+Reglas: Errores nunca culpan al usuario. Siempre ofrecer salida clara. Éxito = oportunidad de siguiente paso. Sin códigos de error visibles.`,
+
+  landing: `## FORMATO: LANDING COPY
+Hero: Headline (máx. 10 palabras, propuesta de valor) / Subheadline (expande con el cómo o para quién) / CTAs.
+Beneficios: Título de sección + 3 beneficios con título y descripción (2 oraciones c/u).
+CTA final: Headline de cierre / Subtext (reduce fricción) / CTA.
+Reglas: Headline debe funcionar solo. Beneficios en lenguaje de resultado, no de feature. CTA final con menos fricción que el inicial.`
+};
+
+const EXAMPLES = {
+  ui_copy: `## EJEMPLOS — UI COPY
+Corredor / Activación:
+Título: Tu primera tasación en segundos
+Subtítulo: Ingresa la dirección y obtén una estimación de valor comercial con comparables reales del mercado.
+CTA: Ver tasación
+Cargando: Consultando el mercado...
+Éxito: Tasación lista
+
+B2C Primera vez / Onboarding:
+Título: Bienvenido a tu ventaja informativa
+Subtítulo: Antes de tomar cualquier decisión sobre tu hogar, tienes todo lo que necesitas acá.
+CTA: Empezar`,
+
+  email: `## EJEMPLOS — EMAIL
+Corredor / Reactivación:
+Asunto: Nuevos datos del mercado que te van a servir
+Preview: Las transacciones de marzo ya están disponibles en tu cuenta.
+
+B2C Primera vez / Descubrimiento:
+Asunto: ¿Sabes cuánto vale tu hogar hoy?
+Preview: La respuesta está a dos clics. Sin intermediarios, sin costo.`,
+
+  cta: `## EJEMPLOS — CTAs
+Corredor: Ver tasación completa / Ver ejemplo de informe / Hablar con un experto
+B2C Primera vez: Descubrir cuánto vale mi hogar / Ver cómo funciona primero / Preguntar a un experto
+Banco/Fintech: Solicitar acceso a la API / Descargar ficha técnica / Agendar demo`,
+
+  empty_state: `## EJEMPLOS — EMPTY STATE
+Corredor sin tasaciones:
+Título: Aún no tienes tasaciones guardadas
+Descripción: Genera tu primera tasación y tendrás todos los comparables del mercado en un solo lugar. Lista para compartir con tu cliente.
+CTA: Crear primera tasación
+
+B2C primera vez sin propiedades:
+Título: Empieza a explorar hogares
+Descripción: Guarda los hogares que te interesen y compáralos con su valor real de mercado. Sin sorpresas cuando llegue el momento de negociar.
+CTA: Buscar mi primer hogar`,
+
+  error: `## EJEMPLOS — ERRORES Y ÉXITO
+Error dirección no encontrada:
+Título: No encontramos esa dirección
+Descripción: Puede ser un problema de formato. Intenta con la dirección completa incluyendo número y comuna.
+CTA: Intentar de nuevo
+
+Éxito tasación generada:
+Título: Tu tasación está lista
+Descripción: Tienes el informe con valor estimado, comparables y métricas financieras. Puedes descargarlo o compartirlo.
+CTA: Ver mi tasación`
+};
+
+function buildSystemPrompt(personaKey, journeyKey, formatKeys, productName) {
+  const persona = PERSONAS[personaKey] || '';
+  const journey = JOURNEYS[journeyKey] || '';
+  const formatBlocks = formatKeys.map(k => FORMATS[k] || '').join('\n\n');
+  const exampleBlocks = formatKeys.filter(k => EXAMPLES[k]).map(k => EXAMPLES[k]).join('\n\n');
+  const productContext = productName
+    ? `\n## PRODUCTO EN CONTEXTO\nEl copy debe considerar este producto específico: ${productName}\n`
+    : '';
+
+  return [
+    ROLE, BRAND_VOICE, persona, journey, formatBlocks, productContext,
+    exampleBlocks ? `## EJEMPLOS DE REFERENCIA\nÚsalos como calibración de tono y estructura — no los copies.\n${exampleBlocks}` : ''
+  ].filter(Boolean).join('\n\n---\n\n');
+}
+
+// ─────────────────────────────────────────────────
+// ESTADO
+// ─────────────────────────────────────────────────
+
+let selectedPersona = 'corredor';
+let selectedJourney = 'onboarding';
+let selectedFormats = ['ui_copy'];
+let history = [];
+let isGenerating = false;
+
+// ─────────────────────────────────────────────────
+// UI HANDLERS
+// ─────────────────────────────────────────────────
+
+function selectPersona(el) {
+  document.querySelectorAll('.persona-card').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  selectedPersona = el.dataset.persona;
+  updateContextBar();
+}
+
+function selectJourney(el) {
+  document.querySelectorAll('.journey-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  selectedJourney = el.dataset.journey;
+  updateContextBar();
+}
+
+function toggleFormat(el) {
+  const fmt = el.dataset.format;
+  if (el.classList.contains('active')) {
+    if (selectedFormats.length === 1) return;
+    el.classList.remove('active');
+    selectedFormats = selectedFormats.filter(f => f !== fmt);
+  } else {
+    el.classList.add('active');
+    selectedFormats.push(fmt);
+  }
+  updateContextBar();
+}
+
+function updateContextBar() {
+  const pCard = document.querySelector(`.persona-card[data-persona="${selectedPersona}"] .persona-name`);
+  const jPill = document.querySelector(`.journey-pill[data-journey="${selectedJourney}"] .journey-name`);
+  const fLabels = selectedFormats.map(f => document.querySelector(`.chip[data-format="${f}"]`)?.textContent || f).join(', ');
+  document.getElementById('contextBar').innerHTML = `
+    <div class="ctx-tag">👤 <span>Usuario:</span> ${pCard?.textContent || selectedPersona}</div>
+    <div class="ctx-divider">·</div>
+    <div class="ctx-tag">🗺️ <span>Etapa:</span> ${jPill?.textContent || selectedJourney}</div>
+    <div class="ctx-divider">·</div>
+    <div class="ctx-tag">📋 <span>Formato:</span> ${fLabels}</div>
+  `;
+}
+
+function useQuick(btn) {
+  document.getElementById('promptInput').value = btn.textContent;
+  document.getElementById('promptInput').focus();
+}
+
+// ─────────────────────────────────────────────────
+// GENERACIÓN — llama al backend /api/generate
+// ─────────────────────────────────────────────────
+
+async function callBackend(systemPrompt, userMessage) {
+  const res = await fetch('/api/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userMessage }]
+    })
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Error del servidor');
+  }
+
+  const data = await res.json();
+  return data.content?.map(b => b.text || '').join('') || 'Sin respuesta.';
+}
+
+async function generate(overrideMessage = '') {
+  if (isGenerating) return;
+  const input = document.getElementById('promptInput').value.trim();
+  const userMessage = overrideMessage || input;
+  if (!userMessage) { document.getElementById('promptInput').focus(); return; }
+
+  isGenerating = true;
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span style="display:inline-flex;gap:3px"><span style="animation:bounce 1s infinite">•</span><span style="animation:bounce 1s .15s infinite">•</span><span style="animation:bounce 1s .3s infinite">•</span></span> Generando...';
+
+  const outputBody = document.getElementById('outputBody');
+  outputBody.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
+
+  const productName = document.getElementById('productSelect').value;
+  const systemPrompt = buildSystemPrompt(selectedPersona, selectedJourney, selectedFormats, productName);
+
+  try {
+    const text = await callBackend(systemPrompt, userMessage);
+    outputBody.textContent = text;
+  } catch (e) {
+    outputBody.textContent = `Error: ${e.message}`;
+  }
+
+  isGenerating = false;
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor"/></svg> Generar copy';
+}
+
+async function generateVariants() {
+  const input = document.getElementById('promptInput').value.trim();
+  if (!input) { document.getElementById('promptInput').focus(); return; }
+  await generate(`Genera 3 variantes de copy para: "${input}"\n\nUsa este formato exacto:\n\n**Variante 1 — [etiqueta de tono]:**\n[copy]\n\n**Variante 2 — [etiqueta de tono]:**\n[copy]\n\n**Variante 3 — [etiqueta de tono]:**\n[copy]\n\n📝 Nota UX: [recomendación de cuándo usar cada variante]`);
+}
+
+function copyOutput() {
+  const text = document.getElementById('outputBody').textContent;
+  if (!text || text.includes('Selecciona usuario')) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const toast = document.getElementById('copyToast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
+  });
+}
+
+function saveToHistory() {
+  const text = document.getElementById('outputBody').textContent;
+  if (!text || text.includes('Selecciona usuario') || text.includes('Error:')) return;
+  const pName = document.querySelector(`.persona-card[data-persona="${selectedPersona}"] .persona-name`)?.textContent || selectedPersona;
+  const jName = document.querySelector(`.journey-pill[data-journey="${selectedJourney}"] .journey-name`)?.textContent || selectedJourney;
+  history.unshift({ persona: pName, journey: jName, text, time: new Date().toLocaleTimeString('es-CL', {hour:'2-digit',minute:'2-digit'}) });
+  if (history.length > 6) history.pop();
+  renderHistory();
+}
+
+function renderHistory() {
+  const section = document.getElementById('historySection');
+  const list = document.getElementById('historyList');
+  if (!history.length) { section.style.display = 'none'; return; }
+  section.style.display = 'flex';
+  list.innerHTML = history.map((h, i) => `
+    <div class="history-item" onclick="loadHistory(${i})">
+      <div class="history-meta"><span>${h.persona}</span><span>·</span><span>${h.journey}</span><span>·</span><span>${h.time}</span></div>
+      <div class="history-snippet">${h.text.substring(0, 120)}...</div>
+    </div>
+  `).join('');
+}
+
+function loadHistory(i) {
+  document.getElementById('outputBody').textContent = history[i].text;
+}
+
+function clearAll() {
+  document.getElementById('promptInput').value = '';
+  document.getElementById('outputBody').innerHTML = `
+    <div class="output-empty">
+      <div class="empty-icon">✍️</div>
+      <div class="empty-text">Selecciona usuario, etapa y formato, luego describe qué necesitas.</div>
+    </div>`;
+}
+</script>
+</body>
+</html>
