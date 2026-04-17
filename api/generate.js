@@ -1,6 +1,6 @@
 // api/generate.js
 // Función serverless de Vercel — proxy seguro hacia la API de Google Gemini
-// Modelo: gemini-1.5-flash-latest (tier gratuito: 1.500 requests/día)
+// Modelo: gemini-2.5-flash (tier gratuito: 500 requests/día)
 // Obtén tu key gratuita en: aistudio.google.com → "Get API key"
 
 export default async function handler(req, res) {
@@ -23,13 +23,17 @@ export default async function handler(req, res) {
 
   const userMessage = messages[messages.length - 1]?.content || '';
 
-  // gemini-1.5-flash-latest no soporta system_instruction
-  // Se inyecta el system prompt como primer turno de conversación
+  // gemini-2.5-flash: modelo gratuito actual (500 req/día)
+  // - Soporta system_instruction nativamente
+  // - Endpoint: v1beta
   const geminiBody = {
+    system_instruction: {
+      parts: [{ text: system }]
+    },
     contents: [
       {
         role: 'user',
-        parts: [{ text: `${system}\n\n---\n\n${userMessage}` }]
+        parts: [{ text: userMessage }]
       }
     ],
     generationConfig: {
@@ -38,8 +42,8 @@ export default async function handler(req, res) {
     }
   };
 
-  const model = 'gemini-1.5-flash-latest';
-  const url = `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${apiKey}`;
+  const model = 'gemini-2.5-flash';
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
   try {
     const response = await fetch(url, {
