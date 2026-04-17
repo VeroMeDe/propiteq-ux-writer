@@ -1,11 +1,7 @@
-// api/generate-gemini.js
+// api/generate.js
 // Función serverless de Vercel — proxy seguro hacia la API de Google Gemini
-// La API key nunca sale del servidor
-//
-// Para activar este backend en lugar del de Anthropic:
-// 1. Renombra este archivo a generate.js (y renombra el original a generate-anthropic.js)
-// 2. En Vercel, cambia la variable de entorno ANTHROPIC_API_KEY por GEMINI_API_KEY
-// 3. Obtén tu key gratuita en: aistudio.google.com → "Get API key"
+// Modelo: gemini-1.5-flash-latest (tier gratuito: 1.500 requests/día)
+// Obtén tu key gratuita en: aistudio.google.com → "Get API key"
 
 export default async function handler(req, res) {
 
@@ -25,19 +21,15 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'API key de Gemini no configurada en el servidor' });
   }
 
-  // Gemini usa un formato distinto al de Anthropic:
-  // - El system prompt va en "system_instruction"
-  // - Los mensajes van en "contents" con role "user" / "model"
   const userMessage = messages[messages.length - 1]?.content || '';
 
+  // gemini-1.5-flash-latest no soporta system_instruction
+  // Se inyecta el system prompt como primer turno de conversación
   const geminiBody = {
-    system_instruction: {
-      parts: [{ text: system }]
-    },
     contents: [
       {
         role: 'user',
-        parts: [{ text: userMessage }]
+        parts: [{ text: `${system}\n\n---\n\n${userMessage}` }]
       }
     ],
     generationConfig: {
@@ -66,8 +58,7 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    // Normalizar la respuesta al mismo formato que usa el frontend
-    // (mismo formato que Anthropic: { content: [{ text: "..." }] })
+    // Normalizar al mismo formato que Anthropic para que el frontend no cambie
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sin respuesta.';
 
     return res.status(200).json({
