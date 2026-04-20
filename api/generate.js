@@ -1,13 +1,17 @@
 // api/generate.js
 // Función serverless de Vercel — proxy seguro hacia la API de Google Gemini
-// Modelo principal: gemini-2.5-flash (tier gratuito: 500 req/día)
-// Modelo fallback: gemini-2.0-flash-lite (tier gratuito, menos demanda)
+// Modelos en orden de preferencia (todos con tier gratuito):
+//   1. gemini-2.5-flash      — mejor calidad, 20 RPM
+//   2. gemini-2.0-flash-lite — fallback, límites más relajados
 // Obtén tu key gratuita en: aistudio.google.com → "Get API key"
 
 const MODELS = [
   'gemini-2.5-flash',
   'gemini-2.0-flash-lite',
 ];
+
+// Códigos que disparan el fallback al siguiente modelo
+const FALLBACK_CODES = [429, 503];
 
 async function callGemini(apiKey, model, body) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
@@ -55,36 +59,36 @@ export default async function handler(req, res) {
     }
   };
 
-  // Intentar con cada modelo en orden — si uno falla con 503, pasa al siguiente
   let lastError = null;
 
   for (const model of MODELS) {
     try {
       const response = await callGemini(apiKey, model, geminiBody);
 
-      // Si no es 503, procesar la respuesta (sea éxito o error distinto)
-      if (response.status !== 503) {
-        if (!response.ok) {
-          const errorData = await response.json();
-          return res.status(response.status).json({
-            error: 'Error de la API de Gemini',
-            detail: errorData,
-          });
-        }
+      // Si es un código de fallback, intentar con el siguiente modelo
+      if (FALLBACK_CODES.includes(response.status)) {
+        const errorData = await response.json();
+        lastError = errorData;
+        continue;
+      }
 
-        const data = await response.json();
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sin respuesta.';
-
-        return res.status(200).json({
-          content: [{ type: 'text', text }],
-          model_used: model, // útil para debug
+      // Cualquier otro error no recuperable — devolver directo
+      if (!response.ok) {
+        const errorData = await response.json();
+        return res.status(response.status).json({
+          error: 'Error de la API de Gemini',
+          detail: errorData,
         });
       }
 
-      // Es 503 — guardar el error y probar con el siguiente modelo
-      const errorData = await response.json();
-      lastError = errorData;
-      continue;
+      // Éxito
+      const data = await response.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sin respuesta.';
+
+      return res.status(200).json({
+        content: [{ type: 'text', text }],
+        model_used: model,
+      });
 
     } catch (error) {
       lastError = { message: error.message };
@@ -92,9 +96,9 @@ export default async function handler(req, res) {
     }
   }
 
-  // Si llegamos aquí, todos los modelos fallaron con 503
-  return res.status(503).json({
-    error: 'Todos los modelos están temporalmente saturados. Intenta en unos minutos.',
+  // Todos los modelos fallaron
+  return res.status(429).json({
+    error: 'Límite de uso alcanzado en todos los modelos. Intenta en unos minutos.',
     detail: lastError,
   });
 }
